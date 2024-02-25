@@ -42,11 +42,20 @@ final class DefaultDataEventBus(val name: String, queue: ChannelQueue[DataEvent]
     queue.publish(event)
   }
 
+  override def publish(events: Iterable[DataEvent]): Unit = {
+    events foreach { e => queue.publish(e) }
+  }
+
+
+  override def publishUpdate(clazz: Class[_], id: String, comment: Option[String] = None): Unit = {
+    publish(DataEvent.update(clazz, id, comment))
+  }
+
   /** 响应事件
-   * FIXME multiple thread
-   *
-   * @param event
-   */
+    * FIXME multiple thread
+    *
+    * @param event
+    */
   override def process(event: DataEvent): Unit = {
     val matched = subscribers.filter(x => event.isMatch(x._1)).flatten(_._2).toList
     matched.foreach { s =>

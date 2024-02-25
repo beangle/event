@@ -24,4 +24,8 @@ trait DataEventBus {
   def subscribe(module: String, subscriber: EventSubscriber[DataEvent]): Unit
 
   def publish(event: DataEvent): Unit
+
+  def publish(events: Iterable[DataEvent]): Unit
+
+  def publishUpdate(clazz: Class[_], id: String, comment: Option[String] = None): Unit
 }

@@ -18,7 +18,6 @@
 package org.beangle.event.bus
 
 import com.google.gson.GsonBuilder
-import org.beangle.commons.lang.Strings
 import org.beangle.commons.lang.time.DateFormats.UTC
 import org.beangle.event.mq.EventSerializer
 
@@ -40,7 +39,6 @@ class DataEventSerializer extends EventSerializer[DataEvent] {
     val eventType = DataEventType.of(emap.get("eventType"))
     val updatedAt = UTC.parse(emap.get("updatedAt")).toInstant
 
-    DataEvent(module, typeName, Strings.split(emap.get("ids")),
-      eventType, updatedAt, comment)
+    DataEvent(module, typeName, emap.get("id"), eventType, updatedAt, comment)
   }
 }

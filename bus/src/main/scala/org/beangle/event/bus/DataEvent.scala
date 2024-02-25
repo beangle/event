@@ -17,13 +17,78 @@
 
 package org.beangle.event.bus
 
+import org.beangle.commons.bean.Properties
+import org.beangle.commons.lang.Strings
 import org.beangle.commons.lang.time.DateFormats.UTC
+import org.beangle.event.bus.DataEventType.{Creation, Deletion, Update}
 
 import java.time.Instant
 
+object DataEvent {
+  private def getId(objects: Any): String = {
+    objects match {
+      case i: Iterable[_] =>
+        if i.isEmpty then "*"
+        else i.map(x => Properties.get(x, "id").toString).mkString(",")
+      case o: Any => Properties.get(o, "id").toString
+    }
+  }
+
+  def create(objects: Any): Iterable[DataEvent] = {
+    objects match
+      case i: Iterable[_] =>
+        i.groupBy(_.getClass.getName) map { case (className, values) =>
+          val module = Strings.substringBeforeLast(className, ".")
+          val typeName = Strings.substringAfterLast(className, ".")
+          val id = getId(values)
+          DataEvent(module, typeName, id, Creation, Instant.now, None)
+        }
+      case o: Any =>
+        val className = o.getClass.getName
+        val module = Strings.substringBeforeLast(className, ".")
+        val typeName = Strings.substringAfterLast(className, ".")
+        val id = getId(o)
+        List(DataEvent(module, typeName, id, Creation, Instant.now, None))
+  }
+
+  def update(clazz: Class[_], id: String, comment: Option[String] = None): DataEvent = {
+    val className = clazz.getName
+    val module = Strings.substringBeforeLast(className, ".")
+    val typeName = Strings.substringAfterLast(className, ".")
+    DataEvent(module, typeName, id, Update, Instant.now, comment)
+  }
+
+  def update(objects: Any): Iterable[DataEvent] = {
+    objects match
+      case i: Iterable[_] =>
+        i.groupBy(_.getClass) map { case (clazz, values) =>
+          update(clazz, getId(values))
+        }
+      case o: Any =>
+        List(update(o.getClass, getId(o)))
+  }
+
+  def remove(objects: Any): Iterable[DataEvent] = {
+    objects match
+      case i: Iterable[_] =>
+        i.groupBy(_.getClass.getName) map { case (className, values) =>
+          val module = Strings.substringBeforeLast(className, ".")
+          val typeName = Strings.substringAfterLast(className, ".")
+          val id = getId(values)
+          DataEvent(module, typeName, id, Deletion, Instant.now, None)
+        }
+      case o: Any =>
+        val className = o.getClass.getName
+        val module = Strings.substringBeforeLast(className, ".")
+        val typeName = Strings.substringAfterLast(className, ".")
+        val id = getId(o)
+        List(DataEvent(module, typeName, id, Deletion, Instant.now, None))
+  }
+}
+
 /** 数据总线事件
- */
-final case class DataEvent(module: String, typeName: String, ids: Array[String], eventType: DataEventType, updatedAt: Instant, comment: Option[String]) {
+  */
+final case class DataEvent(module: String, typeName: String, id: String, eventType: DataEventType, updatedAt: Instant, comment: Option[String]) {
 
   def entityName: String = s"${module}.${typeName}"
 
@@ -36,12 +101,11 @@ final case class DataEvent(module: String, typeName: String, ids: Array[String],
   }
 
   def toJson: String = {
-    val ids = this.ids.mkString(",")
     this.comment match
       case None =>
-        s"""{"entityName":"${this.entityName}","ids":"$ids","eventType":"${this.eventType.toString}","updatedAt":"${UTC.format(java.util.Date.from(this.updatedAt))}"}"""
+        s"""{"entityName":"${this.entityName}","id":"${this.id}","eventType":"${this.eventType.toString}","updatedAt":"${UTC.format(java.util.Date.from(this.updatedAt))}"}"""
       case Some(cmt) =>
-        s"""{"entityName":"${this.entityName}","ids":"$ids","eventType":"${this.eventType.toString}","comment":"${cmt}","updatedAt":"${UTC.format(java.util.Date.from(this.updatedAt))}"}"""
+        s"""{"entityName":"${this.entityName}","id":"${this.id}","eventType":"${this.eventType.toString}","comment":"${cmt}","updatedAt":"${UTC.format(java.util.Date.from(this.updatedAt))}"}"""
   }
 }
 
