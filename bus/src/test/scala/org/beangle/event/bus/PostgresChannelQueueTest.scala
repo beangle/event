@@ -18,7 +18,7 @@
 package org.beangle.event.bus
 
 import org.beangle.data.jdbc.ds.{DataSourceUtils, DatasourceConfig}
-import org.beangle.event.bus.DataEventType.{Creation, Deletion}
+import org.beangle.event.bus.DataEventType.Deletion
 import org.beangle.event.mq.impl.{NullEventSubscriber, PostgresChannelQueue}
 
 import java.time.Instant
@@ -46,7 +46,7 @@ object PostgresChannelQueueTest {
     while (i < 10) {
       Thread.sleep(1000)
       try
-        val e = DataEvent("org.beangle.security", "User", Array("1", "2", "4"), Deletion, Instant.now, None)
+        val e = DataEvent("org.beangle.security", "User", "1,2,3", Deletion, Instant.now, None)
         queue.publish(e)
       catch
         case e: Exception => println(e.getMessage)
