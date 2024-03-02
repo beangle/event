@@ -47,8 +47,8 @@ final class DefaultDataEventBus(val name: String, queue: ChannelQueue[DataEvent]
   }
 
 
-  override def publishUpdate(clazz: Class[_], id: String, comment: Option[String] = None): Unit = {
-    publish(DataEvent.update(clazz, id, comment))
+  override def publishUpdate(clazz: Class[_], filters: Map[String, String], comment: Option[String] = None): Unit = {
+    publish(DataEvent.update(clazz, filters, comment))
   }
 
   /** 响应事件

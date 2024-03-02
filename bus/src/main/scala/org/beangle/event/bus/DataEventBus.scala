@@ -27,5 +27,5 @@ trait DataEventBus {
 
   def publish(events: Iterable[DataEvent]): Unit
 
-  def publishUpdate(clazz: Class[_], id: String, comment: Option[String] = None): Unit
+  def publishUpdate(clazz: Class[_], filters: Map[String, String], comment: Option[String] = None): Unit
 }

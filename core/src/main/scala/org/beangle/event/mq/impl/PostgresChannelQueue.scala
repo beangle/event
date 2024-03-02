@@ -81,7 +81,7 @@ class PostgresPolling[T](queue: PostgresChannelQueue[T], conn: Connection) exten
   private var polling: Boolean = false
 
   private val pgCon: PGConnection = conn.unwrap(classOf[PGConnection])
-  private val delayMillis = 500
+  private val delayMillis = 500 //0.5s
 
   override def run(): Unit = {
     try

@@ -46,7 +46,7 @@ object PostgresChannelQueueTest {
     while (i < 10) {
       Thread.sleep(1000)
       try
-        val e = DataEvent("org.beangle.security", "User", "1,2,3", Deletion, Instant.now, None)
+        val e = DataEvent("org.beangle.security", "User", Map("id" -> "1,2,3"), Deletion, Instant.now, None)
         queue.publish(e)
       catch
         case e: Exception => println(e.getMessage)
