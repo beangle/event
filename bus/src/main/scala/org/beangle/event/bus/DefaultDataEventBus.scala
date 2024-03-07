@@ -17,17 +17,23 @@
 
 package org.beangle.event.bus
 
-import org.beangle.commons.bean.Initializing
+import org.beangle.commons.bean.{Disposable, Initializing}
+import org.beangle.commons.concurrent.{Sidecar, Workers}
 import org.beangle.commons.logging.Logging
 import org.beangle.event.mq.{ChannelQueue, EventSubscriber}
 
-final class DefaultDataEventBus(val name: String, queue: ChannelQueue[DataEvent])
-  extends DataEventBus, EventSubscriber[DataEvent], Initializing, Logging {
+final class DefaultDataEventBus(queue: ChannelQueue[DataEvent])
+  extends DataEventBus, EventSubscriber[DataEvent], Initializing, Disposable, Logging {
 
   private val subscribers = new collection.mutable.HashMap[String, collection.mutable.Set[EventSubscriber[DataEvent]]]
 
+  private var sidecar: Sidecar[DataEvent] = _
+
   override def init(): Unit = {
     queue.subscribe(this)
+    sidecar = new Sidecar[DataEvent]("Beangle DataEventBus", e => {
+      queue.publish(e)
+    })
   }
 
   def subscribe(pattern: String, subscriber: EventSubscriber[DataEvent]): Unit = {
@@ -39,31 +45,35 @@ final class DefaultDataEventBus(val name: String, queue: ChannelQueue[DataEvent]
   }
 
   def publish(event: DataEvent): Unit = {
-    queue.publish(event)
+    sidecar.offer(event)
   }
 
   override def publish(events: Iterable[DataEvent]): Unit = {
-    events foreach { e => queue.publish(e) }
+    events foreach { e => sidecar.offer(e) }
   }
-
 
   override def publishUpdate(clazz: Class[_], filters: Map[String, String], comment: Option[String] = None): Unit = {
     publish(DataEvent.update(clazz, filters, comment))
   }
 
+  override def destroy(): Unit = {
+    sidecar.destroy()
+  }
+
   /** 响应事件
-    * FIXME multiple thread
     *
     * @param event
     */
   override def process(event: DataEvent): Unit = {
     val matched = subscribers.filter(x => event.isMatch(x._1)).flatten(_._2).toList
-    matched.foreach { s =>
-      try {
-        s.process(event)
-      } catch
-        case e: Throwable => logger.error(e.getMessage)
-    }
+    if matched.size > 10 then Workers.work(matched, s => s.process(event))
+    else
+      matched.foreach { s =>
+        try
+          s.process(event)
+        catch
+          case e: Throwable => logger.error(e.getMessage)
+      }
   }
 
 }

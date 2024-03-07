@@ -3,7 +3,7 @@ import org.beangle.parent.Settings.*
 import sbt.Keys.libraryDependencies
 
 ThisBuild / organization := "org.beangle.event"
-ThisBuild / version := "0.0.3-SNAPSHOT"
+ThisBuild / version := "0.0.3"
 ThisBuild / scmInfo := Some(
   ScmInfo(
     url("https://github.com/beangle/event"),
@@ -23,8 +23,8 @@ ThisBuild / developers := List(
 ThisBuild / description := "The Beangle Event Library"
 ThisBuild / homepage := Some(url("https://beangle.github.io/event/index.html"))
 
-val beangle_common_ver = "5.6.13"
-val beangle_data_ver = "5.8.6"
+val beangle_common_ver = "5.6.14"
+val beangle_data_ver = "5.8.7"
 val beangle_commons_core = "org.beangle.commons" %% "beangle-commons-core" % beangle_common_ver
 val beangle_commons_text = "org.beangle.commons" %% "beangle-commons-text" % beangle_common_ver
 val beangle_data_jdbc = "org.beangle.data" %% "beangle-data-jdbc" % beangle_data_ver

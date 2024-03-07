@@ -17,7 +17,6 @@
 
 package org.beangle.event.mq
 
-import org.beangle.commons.bean.{Disposable, Initializing}
 import org.beangle.commons.logging.Logging
 
 abstract class AbstractChannelQueue[T](val name: String, val serializer: EventSerializer[T])
@@ -25,8 +24,10 @@ abstract class AbstractChannelQueue[T](val name: String, val serializer: EventSe
 
   protected var subscribers: Set[EventSubscriber[T]] = Set.empty
 
+  var publishOnly: Boolean = _
+
   override def subscribe(subscriber: EventSubscriber[T]): Unit = {
-    subscribers += subscriber
+    if !publishOnly then subscribers += subscriber
   }
 
   override def unsubscribe(subscriber: EventSubscriber[T]): Unit = {

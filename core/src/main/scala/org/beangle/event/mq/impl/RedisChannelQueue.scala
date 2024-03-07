@@ -43,7 +43,7 @@ class RedisChannelQueue[T](channelName: String, pool: JedisPool, serializer: Eve
   }
 
   override def init(): Unit = {
-    if (daemon == null) {
+    if (!publishOnly && daemon == null) {
       daemon = new RedisPolling[T](this, pool)
       val t = new Thread(daemon, "redis-polling-" + channelName)
       t.setDaemon(true)

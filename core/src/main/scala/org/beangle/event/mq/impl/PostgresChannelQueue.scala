@@ -30,7 +30,7 @@ class PostgresChannelQueue[T](channelName: String, ds: DataSource, serializer: E
   private var daemon: PostgresPolling[T] = _
 
   override def init(): Unit = {
-    listen()
+    if !publishOnly then listen()
   }
 
   def listen(): Unit = {
@@ -48,7 +48,7 @@ class PostgresChannelQueue[T](channelName: String, ds: DataSource, serializer: E
         case e: Exception =>
           logger.error("Failed to connect to database, retrying in 5 seconds...")
           IOs.close(conn)
-          conn == null
+          conn = null
           Thread.sleep(5000)
     }
     this.daemon = new PostgresPolling(this, conn)
