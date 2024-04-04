@@ -17,7 +17,7 @@
 
 package org.beangle.event.bus
 
-import org.beangle.data.jdbc.ds.{DataSourceUtils, DatasourceConfig}
+import org.beangle.jdbc.ds.{DataSourceUtils, DatasourceConfig}
 import org.beangle.event.bus.DataEventType.Deletion
 import org.beangle.event.mq.impl.{NullEventSubscriber, PostgresChannelQueue}
 
