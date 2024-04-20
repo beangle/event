@@ -29,8 +29,8 @@ object DataEvent {
     objects match {
       case i: Iterable[_] =>
         if i.isEmpty then "*"
-        else i.map(x => Properties.get(x, "id").toString).mkString(",")
-      case o: Any => Properties.get(o, "id").toString
+        else i.map(x => Properties.get[Any](x, "id").toString).mkString(",")
+      case o: Any => Properties.get[Any](o, "id").toString
     }
   }
 
