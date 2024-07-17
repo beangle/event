@@ -83,13 +83,13 @@ object DataEvent {
 }
 
 /** 数据总线事件
-  */
+ */
 final case class DataEvent(module: String, typeName: String, filters: Map[String, String], eventType: DataEventType, updatedAt: Instant, comment: Option[String]) {
 
   def entityName: String = s"${module}.${typeName}"
 
   def isMatch(pattern: String): Boolean = {
-    pattern == module || module.charAt(pattern.length) == '.' && module.startsWith(pattern)
+    pattern == module || module.startsWith(pattern) && module.charAt(pattern.length) == '.'
   }
 
   def hasFilter(name: String, value: String): Boolean = {
