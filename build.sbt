@@ -3,7 +3,7 @@ import org.beangle.parent.Settings.*
 import sbt.Keys.*
 
 ThisBuild / organization := "org.beangle.event"
-ThisBuild / version := "0.0.8-SNAPSHOT"
+ThisBuild / version := "0.0.8"
 ThisBuild / scmInfo := Some(
   ScmInfo(
     url("https://github.com/beangle/event"),
@@ -23,8 +23,8 @@ ThisBuild / developers := List(
 ThisBuild / description := "The Beangle Event Library"
 ThisBuild / homepage := Some(url("https://beangle.github.io/event/index.html"))
 
-val beangle_commons = "org.beangle.commons" % "beangle-commons" % "5.6.18"
-val beangle_jdbc = "org.beangle.jdbc" % "beangle-jdbc" % "1.0.3"
+val beangle_commons = "org.beangle.commons" % "beangle-commons" % "5.6.19"
+val beangle_jdbc = "org.beangle.jdbc" % "beangle-jdbc" % "1.0.4"
 
 lazy val root = (project in file("."))
   .settings(
