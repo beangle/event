@@ -23,14 +23,14 @@ ThisBuild / developers := List(
 ThisBuild / description := "The Beangle Event Library"
 ThisBuild / homepage := Some(url("https://beangle.github.io/event/index.html"))
 
-val beangle_commons = "org.beangle.commons" % "beangle-commons" % "5.6.22"
-val beangle_jdbc = "org.beangle.jdbc" % "beangle-jdbc" % "1.0.6"
+val beangle_commons = "org.beangle.commons" % "beangle-commons" % "5.6.24"
+val beangle_jdbc = "org.beangle.jdbc" % "beangle-jdbc" % "1.0.7"
 
 lazy val root = (project in file("."))
   .settings(
     name := "beangle-event",
     common,
-    libraryDependencies ++= Seq(beangle_commons, gson),
+    libraryDependencies ++= Seq(beangle_commons),
     libraryDependencies ++= Seq(beangle_jdbc % "test", logback_classic % "test", scalatest),
     libraryDependencies += (jedis % "optional"),
     libraryDependencies ++= Seq(postgresql % "optional", HikariCP % "optional"),

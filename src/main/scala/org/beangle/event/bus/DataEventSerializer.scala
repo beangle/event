@@ -17,34 +17,37 @@
 
 package org.beangle.event.bus
 
-import com.google.gson.GsonBuilder
+import org.beangle.commons.json.{JsonObject, JsonParser}
 import org.beangle.commons.lang.Strings
 import org.beangle.commons.lang.time.DateFormats.UTC
 import org.beangle.event.mq.EventSerializer
 
 class DataEventSerializer extends EventSerializer[DataEvent] {
-  private val gson = new GsonBuilder().create()
 
   def toJson(event: DataEvent): String = {
     event.toJson
   }
 
   def fromJson(json: String): DataEvent = {
-    val emap = gson.fromJson(json, classOf[java.util.HashMap[String, String]])
-    val entityName = emap.get("entityName")
+    val emap = JsonParser.parse(json).asInstanceOf[JsonObject]
+    val entityName = getString(emap, "entityName")
     val lastDotIndx = entityName.lastIndexOf('.')
     val module = entityName.substring(0, lastDotIndx)
     val typeName = entityName.substring(lastDotIndx + 1)
 
-    val comment = Option(emap.get("comment"))
-    val eventType = DataEventType.of(emap.get("eventType"))
-    val updatedAt = UTC.parse(emap.get("updatedAt")).toInstant
+    val comment = Option(getString(emap, "comment"))
+    val eventType = DataEventType.of(getString(emap, "eventType"))
+    val updatedAt = UTC.parse(getString(emap, "updatedAt")).toInstant
 
-    val filterStr = emap.get("filters")
+    val filterStr = getString(emap, "filters")
     val filters =
       if filterStr == null then Map.empty[String, String]
       else
         Strings.split(filterStr, "&").map(x => (Strings.substringBefore(x, "="), Strings.substringAfter(x, "="))).toMap
     DataEvent(module, typeName, filters, eventType, updatedAt, comment)
+  }
+
+  private def getString(emap: JsonObject, key: String): String = {
+    emap.get(key).orNull.asInstanceOf[String]
   }
 }

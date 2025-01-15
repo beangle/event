@@ -17,19 +17,31 @@
 
 package org.beangle.event.bus
 
+import org.beangle.commons.lang.time.DateFormats.UTC
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
 
 import java.time.Instant
 
 class DataEventTest extends AnyFunSpec with Matchers {
+  val e = DataEvent("org.beangle.security.user", "User", Map("id" -> "1,2,3"), DataEventType.Deletion, Instant.now, None)
+
   describe("DataEvent") {
     it("match") {
-      val e = DataEvent("org.beangle.security.user", "User", Map("id" -> "1,2,3"), DataEventType.Deletion, Instant.now, None)
       e.isMatch("org.beangle.security.model") should be(false)
       e.isMatch("org.beangle.security") should be(true)
       e.isMatch("org.beangle.security.user") should be(true)
       e.isMatch("org.beangle.security.u") should be(false)
+    }
+    it("serialize") {
+      val json = e.toJson
+      val serializer = new DataEventSerializer()
+      val e2 = serializer.fromJson(json)
+      assert(e2.entityName == e.entityName)
+      assert(e2.eventType == e.eventType)
+      assert(e2.filters == e.filters)
+      assert(UTC.format(java.util.Date.from(e2.updatedAt)) == UTC.format(java.util.Date.from(e.updatedAt)))
+      assert(e2.comment == e.comment)
     }
   }
 

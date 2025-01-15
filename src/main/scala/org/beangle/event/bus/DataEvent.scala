@@ -84,7 +84,8 @@ object DataEvent {
 
 /** 数据总线事件
  */
-final case class DataEvent(module: String, typeName: String, filters: Map[String, String], eventType: DataEventType, updatedAt: Instant, comment: Option[String]) {
+final case class DataEvent(module: String, typeName: String, filters: Map[String, String], eventType: DataEventType,
+                           updatedAt: Instant, comment: Option[String]) {
 
   def entityName: String = s"${module}.${typeName}"
 
