@@ -17,7 +17,7 @@
 
 package org.beangle.event.bus
 
-import org.beangle.commons.json.{JsonObject, JsonParser}
+import org.beangle.commons.json.Json
 import org.beangle.commons.lang.Strings
 import org.beangle.commons.lang.time.DateFormats.UTC
 import org.beangle.event.mq.EventSerializer
@@ -29,7 +29,7 @@ class DataEventSerializer extends EventSerializer[DataEvent] {
   }
 
   def fromJson(json: String): DataEvent = {
-    val emap = JsonParser.parse(json).asInstanceOf[JsonObject]
+    val emap = Json.parseObject(json)
     val entityName = emap.getString("entityName")
     val lastDotIndx = entityName.lastIndexOf('.')
     val module = entityName.substring(0, lastDotIndx)
