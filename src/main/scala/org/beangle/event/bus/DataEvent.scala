@@ -18,7 +18,6 @@
 package org.beangle.event.bus
 
 import org.beangle.commons.bean.Properties
-import org.beangle.commons.lang.Strings
 import org.beangle.commons.lang.time.DateFormats.UTC
 import org.beangle.event.bus.DataEventType.{Creation, Deletion, Update}
 
@@ -38,22 +37,16 @@ object DataEvent {
     objects match
       case i: Iterable[_] =>
         i.groupBy(_.getClass.getName) map { case (className, values) =>
-          val module = Strings.substringBeforeLast(className, ".")
-          val typeName = Strings.substringAfterLast(className, ".")
-          DataEvent(module, typeName, Map("id" -> getIds(values)), Creation, Instant.now, None)
+          DataEvent(className, Map("id" -> getIds(values)), Creation, Instant.now, None)
         }
       case o: Any =>
         val className = o.getClass.getName
-        val module = Strings.substringBeforeLast(className, ".")
-        val typeName = Strings.substringAfterLast(className, ".")
-        List(DataEvent(module, typeName, Map("id" -> getIds(o)), Creation, Instant.now, None))
+        List(DataEvent(className, Map("id" -> getIds(o)), Creation, Instant.now, None))
   }
 
   def update(clazz: Class[_], filters: Map[String, String], comment: Option[String] = None): DataEvent = {
     val className = clazz.getName
-    val module = Strings.substringBeforeLast(className, ".")
-    val typeName = Strings.substringAfterLast(className, ".")
-    DataEvent(module, typeName, filters, Update, Instant.now, comment)
+    DataEvent(className, filters, Update, Instant.now, comment)
   }
 
   def update(objects: Any): Iterable[DataEvent] = {
@@ -70,27 +63,22 @@ object DataEvent {
     objects match
       case i: Iterable[_] =>
         i.groupBy(_.getClass.getName) map { case (className, values) =>
-          val module = Strings.substringBeforeLast(className, ".")
-          val typeName = Strings.substringAfterLast(className, ".")
-          DataEvent(module, typeName, Map("id" -> getIds(values)), Deletion, Instant.now, None)
+          DataEvent(className, Map("id" -> getIds(values)), Deletion, Instant.now, None)
         }
       case o: Any =>
         val className = o.getClass.getName
-        val module = Strings.substringBeforeLast(className, ".")
-        val typeName = Strings.substringAfterLast(className, ".")
-        List(DataEvent(module, typeName, Map("id" -> getIds(o)), Deletion, Instant.now, None))
+        List(DataEvent(className, Map("id" -> getIds(o)), Deletion, Instant.now, None))
   }
 }
 
 /** 数据总线事件
  */
-final case class DataEvent(module: String, typeName: String, filters: Map[String, String], eventType: DataEventType,
+final case class DataEvent(dataType: String, filters: Map[String, String], eventType: DataEventType,
                            updatedAt: Instant, comment: Option[String]) {
 
-  def entityName: String = s"${module}.${typeName}"
-
   def isMatch(pattern: String): Boolean = {
-    pattern == module || module.startsWith(pattern) && module.charAt(pattern.length) == '.'
+    val m = moduleName
+    pattern == m || m.startsWith(pattern) && m.charAt(pattern.length) == '.'
   }
 
   def hasFilter(name: String, value: String): Boolean = {
@@ -101,13 +89,18 @@ final case class DataEvent(module: String, typeName: String, filters: Map[String
     toJson
   }
 
+  def moduleName: String = {
+    val lastDotIdx = dataType.lastIndexOf('.')
+    if lastDotIdx < 0 then "" else dataType.substring(0, lastDotIdx)
+  }
+
   def toJson: String = {
     val filterString = filters.map(x => s"${x._1}=${x._2}").mkString("&")
     this.comment match
       case None =>
-        s"""{"entityName":"${this.entityName}","filters":"${filterString}","eventType":"${this.eventType.toString}","updatedAt":"${UTC.format(java.util.Date.from(this.updatedAt))}"}"""
+        s"""{"dataType":"${this.dataType}","filters":"${filterString}","eventType":"${this.eventType.toString}","updatedAt":"${UTC.format(java.util.Date.from(this.updatedAt))}"}"""
       case Some(cmt) =>
-        s"""{"entityName":"${this.entityName}","filters":"${filterString}","eventType":"${this.eventType.toString}","comment":"${cmt}","updatedAt":"${UTC.format(java.util.Date.from(this.updatedAt))}"}"""
+        s"""{"dataType":"${this.dataType}","filters":"${filterString}","eventType":"${this.eventType.toString}","comment":"${cmt}","updatedAt":"${UTC.format(java.util.Date.from(this.updatedAt))}"}"""
   }
 }
 

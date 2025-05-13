@@ -22,11 +22,16 @@ import org.beangle.commons.concurrent.{Sidecar, Workers}
 import org.beangle.commons.logging.Logging
 import org.beangle.event.mq.{ChannelQueue, EventSubscriber}
 
+/** Default DataEventBus
+ *
+ * @param queue outside global queue
+ */
 final class DefaultDataEventBus(queue: ChannelQueue[DataEvent])
   extends DataEventBus, EventSubscriber[DataEvent], Initializing, Disposable, Logging {
 
   private val subscribers = new collection.mutable.HashMap[String, collection.mutable.Set[EventSubscriber[DataEvent]]]
 
+  /** inside publishing queue with sidecar */
   private var sidecar: Sidecar[DataEvent] = _
 
   override def init(): Unit = {
@@ -61,9 +66,9 @@ final class DefaultDataEventBus(queue: ChannelQueue[DataEvent])
   }
 
   /** 响应事件
-    *
-    * @param event
-    */
+   *
+   * @param event
+   */
   override def process(event: DataEvent): Unit = {
     val matched = subscribers.filter(x => event.isMatch(x._1)).flatten(_._2).toList
     if matched.size > 10 then Workers.work(matched, s => s.process(event))

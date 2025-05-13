@@ -30,10 +30,7 @@ class DataEventSerializer extends EventSerializer[DataEvent] {
 
   def fromJson(json: String): DataEvent = {
     val emap = Json.parseObject(json)
-    val entityName = emap.getString("entityName")
-    val lastDotIndx = entityName.lastIndexOf('.')
-    val module = entityName.substring(0, lastDotIndx)
-    val typeName = entityName.substring(lastDotIndx + 1)
+    val dataType = emap.getString("dataType")
 
     val comment = Option(emap.getString("comment", null))
     val eventType = DataEventType.of(emap.getString("eventType"))
@@ -44,7 +41,7 @@ class DataEventSerializer extends EventSerializer[DataEvent] {
       if Strings.isEmpty(filterStr) then Map.empty[String, String]
       else
         Strings.split(filterStr, "&").map(x => (Strings.substringBefore(x, "="), Strings.substringAfter(x, "="))).toMap
-    DataEvent(module, typeName, filters, eventType, updatedAt, comment)
+    DataEvent(dataType, filters, eventType, updatedAt, comment)
   }
 
 }

@@ -24,7 +24,7 @@ import org.scalatest.matchers.should.Matchers
 import java.time.Instant
 
 class DataEventTest extends AnyFunSpec with Matchers {
-  val e = DataEvent("org.beangle.security.user", "User", Map("id" -> "1,2,3"), DataEventType.Deletion, Instant.now, None)
+  val e = DataEvent("org.beangle.security.user.User", Map("id" -> "1,2,3"), DataEventType.Deletion, Instant.now, None)
 
   describe("DataEvent") {
     it("match") {
@@ -37,7 +37,8 @@ class DataEventTest extends AnyFunSpec with Matchers {
       val json = e.toJson
       val serializer = new DataEventSerializer()
       val e2 = serializer.fromJson(json)
-      assert(e2.entityName == e.entityName)
+      assert(e2.dataType == e.dataType)
+      assert(e2.moduleName == "org.beangle.security.user")
       assert(e2.eventType == e.eventType)
       assert(e2.filters == e.filters)
       assert(UTC.format(java.util.Date.from(e2.updatedAt)) == UTC.format(java.util.Date.from(e.updatedAt)))
