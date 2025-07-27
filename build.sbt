@@ -3,7 +3,7 @@ import org.beangle.parent.Settings.*
 import sbt.Keys.*
 
 ThisBuild / organization := "org.beangle.event"
-ThisBuild / version := "0.1.1-SNAPSHOT"
+ThisBuild / version := "0.1.1"
 ThisBuild / scmInfo := Some(
   ScmInfo(
     url("https://github.com/beangle/event"),
