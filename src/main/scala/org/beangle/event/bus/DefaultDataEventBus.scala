@@ -36,7 +36,7 @@ final class DefaultDataEventBus(queue: ChannelQueue[DataEvent])
 
   override def init(): Unit = {
     queue.subscribe(this)
-    sidecar = new Sidecar[DataEvent]("Beangle DataEventBus", e => {
+    sidecar = new Sidecar[DataEvent]("Beangle DataEventBus Sidecar", e => {
       queue.publish(e)
     })
   }
@@ -67,7 +67,7 @@ final class DefaultDataEventBus(queue: ChannelQueue[DataEvent])
 
   /** 响应事件
    *
-   * @param event
+   * @param event data event
    */
   override def process(event: DataEvent): Unit = {
     val matched = subscribers.filter(x => event.isMatch(x._1)).flatten(_._2).toList
