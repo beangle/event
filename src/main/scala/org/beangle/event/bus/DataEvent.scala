@@ -33,19 +33,25 @@ object DataEvent {
     }
   }
 
+  private def getEntityName(clazz: Class[_]): String = {
+    val className = clazz.getName
+    val dollaIdx = className.indexOf('$')
+    if dollaIdx == -1 then className else className.substring(0, dollaIdx)
+  }
+
   def create(objects: Any): Iterable[DataEvent] = {
     objects match
       case i: Iterable[_] =>
-        i.groupBy(_.getClass.getName) map { case (className, values) =>
-          DataEvent(className, Map("id" -> getIds(values)), Creation, Instant.now, None)
+        i.groupBy(_.getClass) map { case (clazz, values) =>
+          DataEvent(getEntityName(clazz), Map("id" -> getIds(values)), Creation, Instant.now, None)
         }
       case o: Any =>
-        val className = o.getClass.getName
+        val className = getEntityName(o.getClass)
         List(DataEvent(className, Map("id" -> getIds(o)), Creation, Instant.now, None))
   }
 
   def update(clazz: Class[_], filters: Map[String, String], comment: Option[String] = None): DataEvent = {
-    val className = clazz.getName
+    val className = getEntityName(clazz)
     DataEvent(className, filters, Update, Instant.now, comment)
   }
 
@@ -62,11 +68,11 @@ object DataEvent {
   def remove(objects: Any): Iterable[DataEvent] = {
     objects match
       case i: Iterable[_] =>
-        i.groupBy(_.getClass.getName) map { case (className, values) =>
-          DataEvent(className, Map("id" -> getIds(values)), Deletion, Instant.now, None)
+        i.groupBy(_.getClass) map { case (clazz, values) =>
+          DataEvent(getEntityName(clazz), Map("id" -> getIds(values)), Deletion, Instant.now, None)
         }
       case o: Any =>
-        val className = o.getClass.getName
+        val className = getEntityName(o.getClass)
         List(DataEvent(className, Map("id" -> getIds(o)), Deletion, Instant.now, None))
   }
 }
