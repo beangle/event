@@ -20,20 +20,15 @@ package org.beangle.event.mq.impl
 import org.beangle.commons.logging.Logging
 import org.beangle.event.mq.*
 import redis.clients.jedis.exceptions.JedisConnectionException
-import redis.clients.jedis.{JedisPool, JedisPubSub}
+import redis.clients.jedis.{JedisPubSub, RedisClient}
 
-class RedisChannelQueue[T](channelName: String, pool: JedisPool, serializer: EventSerializer[T])
+class RedisChannelQueue[T](channelName: String, client: RedisClient, serializer: EventSerializer[T])
   extends AbstractChannelQueue(channelName, serializer) {
 
   private var daemon: RedisPolling[T] = _
 
   override def publish(event: T): Unit = {
-    val jedis = pool.getResource
-    try {
-      jedis.publish(channelName, serializer.toJson(event))
-    } finally {
-      jedis.close()
-    }
+    client.publish(channelName, serializer.toJson(event))
   }
 
   override def destroy(): Unit = {
@@ -44,7 +39,7 @@ class RedisChannelQueue[T](channelName: String, pool: JedisPool, serializer: Eve
 
   override def init(): Unit = {
     if (!publishOnly && daemon == null) {
-      daemon = new RedisPolling[T](this, pool)
+      daemon = new RedisPolling[T](this, client)
       val t = new Thread(daemon, "redis-polling-" + channelName)
       t.setDaemon(true)
       t.start()
@@ -52,17 +47,15 @@ class RedisChannelQueue[T](channelName: String, pool: JedisPool, serializer: Eve
   }
 }
 
-class RedisPolling[T](queue: RedisChannelQueue[T], pool: JedisPool) extends JedisPubSub, Runnable, Logging {
+class RedisPolling[T](queue: RedisChannelQueue[T], client: RedisClient) extends JedisPubSub, Runnable, Logging {
   override def onMessage(channel: String, msg: String): Unit = {
     queue.onMessage(msg)
   }
 
   override def run(): Unit = {
     try {
-      val jedis = pool.getResource
       logger.info("Subscribing redis on channel:" + queue.name)
-      jedis.subscribe(this, queue.name)
-      jedis.close()
+      client.subscribe(this, queue.name)
     } catch {
       case e: JedisConnectionException => logger.error("Connect redis failed.")
     }
