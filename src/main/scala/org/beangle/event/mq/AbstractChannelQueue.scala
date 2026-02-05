@@ -17,10 +17,9 @@
 
 package org.beangle.event.mq
 
-import org.beangle.commons.logging.Logging
+import org.beangle.event.EventLogger
 
-abstract class AbstractChannelQueue[T](val name: String, val serializer: EventSerializer[T])
-  extends ChannelQueue[T], Logging {
+abstract class AbstractChannelQueue[T](val name: String, val serializer: EventSerializer[T]) extends ChannelQueue[T] {
 
   protected var subscribers: Set[EventSubscriber[T]] = Set.empty
 
@@ -40,7 +39,7 @@ abstract class AbstractChannelQueue[T](val name: String, val serializer: EventSe
       try {
         s.process(e)
       } catch
-        case e: Exception => logger.error("Error processing event", e)
+        case e: Exception => EventLogger.error("Error processing event", e)
     }
   }
 }

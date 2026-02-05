@@ -17,7 +17,7 @@
 
 package org.beangle.event.mq.impl
 
-import org.beangle.commons.logging.Logging
+import org.beangle.event.EventLogger
 import org.beangle.event.mq.*
 import redis.clients.jedis.exceptions.JedisConnectionException
 import redis.clients.jedis.{JedisPubSub, RedisClient}
@@ -47,17 +47,17 @@ class RedisChannelQueue[T](channelName: String, client: RedisClient, serializer:
   }
 }
 
-class RedisPolling[T](queue: RedisChannelQueue[T], client: RedisClient) extends JedisPubSub, Runnable, Logging {
+class RedisPolling[T](queue: RedisChannelQueue[T], client: RedisClient) extends JedisPubSub, Runnable {
   override def onMessage(channel: String, msg: String): Unit = {
     queue.onMessage(msg)
   }
 
   override def run(): Unit = {
     try {
-      logger.info("Subscribing redis on channel:" + queue.name)
+      EventLogger.info("Subscribing redis on channel:" + queue.name)
       client.subscribe(this, queue.name)
     } catch {
-      case e: JedisConnectionException => logger.error("Connect redis failed.")
+      case e: JedisConnectionException => EventLogger.error("Connect redis failed.")
     }
   }
 }

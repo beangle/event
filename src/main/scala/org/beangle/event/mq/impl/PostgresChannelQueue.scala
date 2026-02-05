@@ -18,6 +18,7 @@
 package org.beangle.event.mq.impl
 
 import org.beangle.commons.io.IOs
+import org.beangle.event.EventLogger
 import org.beangle.event.mq.*
 import org.postgresql.PGConnection
 
@@ -46,7 +47,7 @@ class PostgresChannelQueue[T](channelName: String, ds: DataSource, serializer: E
         stmt.close()
       } catch
         case e: Exception =>
-          logger.error("Failed to connect to database, retrying in 5 seconds...")
+          EventLogger.error("Failed to connect to database, retrying in 5 seconds...")
           IOs.close(conn)
           conn = null
           Thread.sleep(5000)

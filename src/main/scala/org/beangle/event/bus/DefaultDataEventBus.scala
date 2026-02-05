@@ -19,7 +19,7 @@ package org.beangle.event.bus
 
 import org.beangle.commons.bean.{Disposable, Initializing}
 import org.beangle.commons.concurrent.{Sidecar, Workers}
-import org.beangle.commons.logging.Logging
+import org.beangle.event.EventLogger
 import org.beangle.event.mq.{ChannelQueue, EventSubscriber}
 
 /** Default DataEventBus
@@ -27,7 +27,7 @@ import org.beangle.event.mq.{ChannelQueue, EventSubscriber}
  * @param queue outside global queue
  */
 final class DefaultDataEventBus(queue: ChannelQueue[DataEvent])
-  extends DataEventBus, EventSubscriber[DataEvent], Initializing, Disposable, Logging {
+  extends DataEventBus, EventSubscriber[DataEvent], Initializing, Disposable {
 
   private val subscribers = new collection.mutable.HashMap[String, collection.mutable.Set[EventSubscriber[DataEvent]]]
 
@@ -77,7 +77,7 @@ final class DefaultDataEventBus(queue: ChannelQueue[DataEvent])
         try
           s.process(event)
         catch
-          case e: Throwable => logger.error(e.getMessage)
+          case e: Throwable => EventLogger.error(e.getMessage)
       }
   }
 
