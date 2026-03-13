@@ -41,12 +41,26 @@ final class DefaultDataEventBus(queue: ChannelQueue[DataEvent])
     })
   }
 
+  /** remove tailing dot
+   *
+   * @param p
+   * @return
+   */
+  private def normalizer(p: String): String = {
+    require(null != p)
+    if (p.endsWith(".")) {
+      p.substring(0, p.length - 1)
+    } else {
+      p
+    }
+  }
+
   def subscribe(pattern: String, subscriber: EventSubscriber[DataEvent]): Unit = {
-    subscribers.getOrElseUpdate(pattern, new collection.mutable.HashSet) += subscriber
+    subscribers.getOrElseUpdate(normalizer(pattern), new collection.mutable.HashSet) += subscriber
   }
 
   def unsubscribe(pattern: String, subscriber: EventSubscriber[DataEvent]): Unit = {
-    subscribers.get(pattern).foreach(_.remove(subscriber))
+    subscribers.get(normalizer(pattern)).foreach(_.remove(subscriber))
   }
 
   def publish(event: DataEvent): Unit = {
@@ -71,14 +85,16 @@ final class DefaultDataEventBus(queue: ChannelQueue[DataEvent])
    */
   override def process(event: DataEvent): Unit = {
     val matched = subscribers.filter(x => event.isMatch(x._1)).flatten(_._2).toList
-    if matched.size > 10 then Workers.work(matched, s => s.process(event))
-    else
+    if matched.size > 10 then Workers.workOn(matched,0) { s => s.process(event) }
+    else {
       matched.foreach { s =>
-        try
+        try {
           s.process(event)
-        catch
+        } catch {
           case e: Throwable => EventLogger.error(e.getMessage)
+        }
       }
+    }
   }
 
 }

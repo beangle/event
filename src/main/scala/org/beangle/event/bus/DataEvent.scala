@@ -83,8 +83,7 @@ final case class DataEvent(dataType: String, filters: Map[String, String], event
                            updatedAt: Instant, comment: Option[String]) {
 
   def isMatch(pattern: String): Boolean = {
-    val m = moduleName
-    pattern == m || m.startsWith(pattern) && m.charAt(pattern.length) == '.'
+    (pattern == dataType) || dataType.startsWith(pattern + ".")
   }
 
   def hasFilter(name: String, value: String): Boolean = {
