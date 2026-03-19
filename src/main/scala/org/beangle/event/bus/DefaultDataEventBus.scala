@@ -85,13 +85,13 @@ final class DefaultDataEventBus(queue: ChannelQueue[DataEvent])
    */
   override def process(event: DataEvent): Unit = {
     val matched = subscribers.filter(x => event.isMatch(x._1)).flatten(_._2).toList
-    if matched.size > 10 then Workers.workOn(matched,0) { s => s.process(event) }
+    if matched.size > 10 then Workers.workOn(matched, 0) { s => s.process(event) }
     else {
       matched.foreach { s =>
         try {
           s.process(event)
         } catch {
-          case e: Throwable => EventLogger.error(e.getMessage)
+          case e: Throwable => EventLogger.error(e.getMessage, e)
         }
       }
     }
