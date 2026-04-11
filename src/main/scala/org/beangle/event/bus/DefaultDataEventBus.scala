@@ -36,7 +36,7 @@ final class DefaultDataEventBus(queue: ChannelQueue[DataEvent])
 
   override def init(): Unit = {
     queue.subscribe(this)
-    sidecar = new Sidecar[DataEvent]("Beangle DataEventBus Sidecar", e => {
+    sidecar = new Sidecar[DataEvent]("beangle-event-bus", e => {
       queue.publish(e)
     })
   }
