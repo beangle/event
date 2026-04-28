@@ -19,13 +19,15 @@ package org.beangle.event.bus
 
 import org.beangle.commons.bean.Initializing
 import org.beangle.commons.cdi.Container
+import org.beangle.event.EventLogger
 
 class DataEventSubscriberRegistrar(bus: DataEventBus) extends Initializing {
   var container: Container = _
 
   override def init(): Unit = {
-    container.getBean(classOf[DataEventSubscriber]) foreach { b =>
+    container.getBeans(classOf[DataEventSubscriber]) foreach { case (n, b) =>
       bus.subscribe(b.pattern, b)
+      EventLogger.info(s"Register ${n} at ${b.pattern}")
     }
   }
 }
