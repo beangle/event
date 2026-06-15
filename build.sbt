@@ -23,8 +23,8 @@ ThisBuild / developers := List(
 ThisBuild / description := "The Beangle Event Library"
 ThisBuild / homepage := Some(url("https://beangle.github.io/event/index.html"))
 
-val beangle_commons = "org.beangle.commons" % "beangle-commons" % "6.1.1"
-val beangle_jdbc = "org.beangle.jdbc" % "beangle-jdbc" % "1.1.8"
+val beangle_commons = "org.beangle.commons" % "beangle-commons" % "6.2.0"
+val beangle_jdbc = "org.beangle.jdbc" % "beangle-jdbc" % "1.1.9"
 
 lazy val root = (project in file("."))
   .settings(
